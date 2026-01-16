@@ -157,6 +157,7 @@ export default function App() {
           <table>
             <thead>
               <tr>
+                <th>No.</th>
                 <th>Time</th>
                 <th>Transcript</th>
                 <th>AI parsed</th>
@@ -166,13 +167,14 @@ export default function App() {
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: "center", padding: 12 }}>
+                  <td colSpan="5" style={{ textAlign: "center", padding: 12 }}>
                     (empty)
                   </td>
                 </tr>
               ) : (
-                rows.map((r) => (
+                rows.map((r, idx) => (
                   <tr key={r.id}>
+                    <td>{idx + 1}</td>
                     <td>{r.targetTime}</td>
                     <td>{r.transcript}</td>
                     <td>{r.spokenTime || "-"}</td>
