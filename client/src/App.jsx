@@ -120,7 +120,8 @@ export default function App() {
   return (
     <div className="page">
       <div className="left">
-        <h2>Analog Clock Speaking Practice (VI)</h2>
+        <h2>Analog Clock Speaking with AI</h2>
+        <h3>Tác giả: Ba của Ten</h3>
 
         <>
             <div className="clockWrap">
