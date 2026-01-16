@@ -19,7 +19,7 @@ function getSpeechRecognition() {
 
 export default function App() {
   const [started, setStarted] = useState(false);
-  const [time, setTime] = useState(() => randomTime5MinStep());
+  const [time, setTime] = useState(() => ({ hour: 0, minute: 0 }));
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [aiResult, setAiResult] = useState(null); // {isCorrect, spokenTime, confidence, explanation}
@@ -122,12 +122,7 @@ export default function App() {
       <div className="left">
         <h2>Analog Clock Speaking Practice (VI)</h2>
 
-        {!started ? (
-          <button className="btn" onClick={handleStart}>
-            Start
-          </button>
-        ) : (
-          <>
+        <>
             <div className="clockWrap">
               <AnalogClock hour={time.hour} minute={time.minute} />
             </div>
@@ -154,7 +149,6 @@ export default function App() {
               </div>
             </div>
           </>
-        )}
       </div>
 
       <div className="right">
