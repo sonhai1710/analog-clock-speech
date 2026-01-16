@@ -1,0 +1,106 @@
+.page {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 16px;
+  padding: 16px;
+  font-family: Arial, sans-serif;
+}
+
+.left, .right {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fff;
+}
+
+.clockWrap {
+  margin: 10px 0 14px;
+  display: flex;
+  justify-content: center;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.btn {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #111;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn.secondary {
+  background: #fff;
+  color: #111;
+}
+
+.status {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px dashed #bbb;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.aiBox {
+  margin-top: 6px;
+}
+
+.hint {
+  margin-top: 6px;
+  color: #333;
+  font-size: 13px;
+}
+
+.tableWrap {
+  overflow: auto;
+  max-height: 520px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  vertical-align: top;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: #f7f7f7;
+  z-index: 1;
+  text-align: left;
+}
+
+.ok {
+  color: #0a7a0a;
+  font-weight: bold;
+}
+
+.bad {
+  color: #b00020;
+  font-weight: bold;
+}
+
+.note {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #444;
+}
