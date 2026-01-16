@@ -45,8 +45,7 @@ export default function App() {
       return;
     }
 
-    const target = randomTime5MinStep();
-
+    var target = randomTime5MinStep();
     setTime(target);
 
     const rec = new SpeechRecognition();
@@ -54,34 +53,13 @@ export default function App() {
     rec.interimResults = false;
     rec.maxAlternatives = 1;
 
-    const TIMEOUT = 5000; // 10 giây timeout
-
-    let timeoutId;
-
     rec.onstart = () => {
-      // Thiết lập timeout khi bắt đầu nhận diện giọng nói
-      timeoutId = setTimeout(() => {
-        const text = ""; // Không có transcript
-        setTranscript(text);
-        setAiResult("");
-
-        const targetTime = formatTime(target);
-        setRows((prev) => [
-          {
-            id: crypto.randomUUID(),
-            targetTime,
-            transcript: "-",
-            isCorrect: false,
-            spokenTime: "-",
-            confidence: "-"
-          },
-          ...prev
-        ]);
-        
-      }, TIMEOUT);
+      console.log('onstart');
     };
 
+    // Xử lý kết quả khi người dùng nói
     rec.onresult = async (event) => {
+      console.log('onresult');
       const text = event.results?.[0]?.[0]?.transcript || "";
       setTranscript(text);
 
@@ -111,19 +89,21 @@ export default function App() {
           explanation: "Lỗi khi gọi AI."
         });
       } finally {
-        setListening(false);
+        console.log('finally');
+        target = randomTime5MinStep();
+        setTime(target);
       }
     };
 
+    // Xử lý lỗi khi không lấy được âm thanh từ micro
     rec.onerror = (e) => {
       console.error(e);
-      setListening(false);
-      alert("Không lấy được âm thanh từ micro (bị từ chối quyền hoặc lỗi thiết bị).");
     };
 
+    // Khi ghi âm kết thúc, gọi lại hàm này để tiếp tục lắng nghe
     rec.onend = () => {
-      // Nếu user im lặng, rec có thể tự end mà chưa có result
-      startListeningAndCheck();
+      console.log('onend');
+      rec.start();
     };
 
     rec.start();
@@ -146,7 +126,6 @@ export default function App() {
       <div className="left">
         <h2>Analog Clock Speaking with AI</h2>
         <h3>Tác giả: Ba của Ten</h3>
-
         <>
             <div className="clockWrap">
               <AnalogClock hour={time.hour} minute={time.minute} />
@@ -158,7 +137,7 @@ export default function App() {
               </button>
 
               <button className="btn secondary" onClick={handleStop} disabled={!listening}>
-                Restart
+                Stop
               </button>
             </div>
 
