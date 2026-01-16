@@ -28,16 +28,7 @@ export default function App() {
   const timeRef = useRef(time);
   timeRef.current = time;
 
-  const SpeechRecognition = useMemo(() => getSpeechRecognition(), []);
-
-  const handleStart = () => {
-    setStarted(true);
-    setRows([]);          // reset report theo yêu cầu
-    setAiResult(null);
-    setTranscript("");
-    const t = randomTime5MinStep();
-    setTime(t);
-  };
+  const SpeechRecognition = useMemo(() => getSpeechRecognition(), []);  
 
   const runCheckWithAI = async (targetTime, transcriptText) => {
     const res = await fetch("/api/check-time", {
@@ -48,20 +39,47 @@ export default function App() {
     return res.json();
   };
 
-  const startListeningAndCheck = async (target) => {
+  const startListeningAndCheck = async () => {
     if (!SpeechRecognition) {
       alert("Trình duyệt chưa hỗ trợ SpeechRecognition. Hãy dùng Chrome desktop.");
       return;
     }
 
-    setListening(true);
-    setTranscript("");
-    setAiResult(null);
+    const target = randomTime5MinStep();
+
+    setTime(target);
 
     const rec = new SpeechRecognition();
     rec.lang = "vi-VN";
     rec.interimResults = false;
     rec.maxAlternatives = 1;
+
+    const TIMEOUT = 5000; // 10 giây timeout
+
+    let timeoutId;
+
+    rec.onstart = () => {
+      // Thiết lập timeout khi bắt đầu nhận diện giọng nói
+      timeoutId = setTimeout(() => {
+        const text = ""; // Không có transcript
+        setTranscript(text);
+        setAiResult("");
+
+        const targetTime = formatTime(target);
+        setRows((prev) => [
+          {
+            id: crypto.randomUUID(),
+            targetTime,
+            transcript: "-",
+            isCorrect: false,
+            spokenTime: "-",
+            confidence: "-"
+          },
+          ...prev
+        ]);
+        
+      }, TIMEOUT);
+    };
 
     rec.onresult = async (event) => {
       const text = event.results?.[0]?.[0]?.transcript || "";
@@ -105,16 +123,22 @@ export default function App() {
 
     rec.onend = () => {
       // Nếu user im lặng, rec có thể tự end mà chưa có result
-      setListening(false);
+      startListeningAndCheck();
     };
 
     rec.start();
   };
 
-  const handleNext = async () => {
-    const t = randomTime5MinStep();
-    setTime(t);
-    await startListeningAndCheck(t);
+  const handleStart = async () => {
+    setRows([]);
+    setAiResult(null);    
+    setListening(true);
+    setTranscript("");
+    startListeningAndCheck();
+  };
+
+  const handleStop = () => {  
+    setListening(false); 
   };
 
   return (
@@ -129,11 +153,11 @@ export default function App() {
             </div>
 
             <div className="actions">
-              <button className="btn" onClick={handleNext} disabled={listening}>
-                {listening ? "Đang nghe..." : "Next"}
+              <button className="btn" onClick={handleStart} disabled={listening}>
+                {listening ? "Đang nghe..." : "Start"}
               </button>
 
-              <button className="btn secondary" onClick={handleStart} disabled={listening}>
+              <button className="btn secondary" onClick={handleStop} disabled={!listening}>
                 Restart
               </button>
             </div>
