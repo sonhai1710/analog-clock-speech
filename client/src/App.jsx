@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import AnalogClock from "./components/AnalogClock";
 import "./App.css";
 
@@ -18,13 +18,16 @@ function getSpeechRecognition() {
 }
 
 export default function App() {
+  const recognitionRef = useRef(null);
+  const shouldListenRef = useRef(false);
+  var target = useRef(null);
   const [started, setStarted] = useState(false);
   const [time, setTime] = useState(() => ({ hour: 0, minute: 0 }));
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [aiResult, setAiResult] = useState(null); // {isCorrect, spokenTime, confidence, explanation}
   const [rows, setRows] = useState([]); // report table
-
+  
   const timeRef = useRef(time);
   timeRef.current = time;
 
@@ -70,6 +73,7 @@ export default function App() {
         setAiResult(result);
 
         setRows((prev) => [
+          ...prev,
           {
             id: crypto.randomUUID(),
             targetTime,
@@ -77,8 +81,7 @@ export default function App() {
             isCorrect: !!result?.isCorrect,
             spokenTime: result?.spokenTime || "",
             confidence: typeof result?.confidence === "number" ? result.confidence : null
-          },
-          ...prev
+          }
         ]);
       } catch (e) {
         console.error(e);
@@ -104,7 +107,7 @@ export default function App() {
     rec.onend = () => {
       console.log('onend');
       rec.start();
-    };
+    };    
 
     rec.start();
   };
@@ -114,12 +117,91 @@ export default function App() {
     setAiResult(null);    
     setListening(true);
     setTranscript("");
-    startListeningAndCheck();
+    recognitionRef.current.start();
+  };  
+
+  const handleStop = () => {    
+    setListening(false);
+    recognitionRef.current.stop();
   };
 
-  const handleStop = () => {  
-    setListening(false); 
+  useEffect(() => {
+    // Kiểm tra browser support
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Trình duyệt không hỗ trợ SpeechRecognition (dùng Chrome)");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "vi-VN"; // hoặc "en-US"
+    recognition.continuous = false; // nghe liên tục
+    recognition.interimResults = false; // hiển thị kết quả tạm
+
+    console.log('SpeechRecognition initialized');
+
+    // recognition.onstart = () => {
+    //   console.log('onstart');
+      
+    // };    
+
+    recognition.onresult = async (event) => {
+      console.log('onresult');
+
+      const text = event.results?.[0]?.[0]?.transcript || "";
+      setTranscript(text);
+      
+      const targetTime = formatTime(target.current);
+      const result = await runCheckWithAI(targetTime, text);
+
+      setAiResult(result);
+
+      setRows((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          targetTime,
+          transcript: text,
+          isCorrect: !!result?.isCorrect,
+          spokenTime: result?.spokenTime || "",
+          confidence: typeof result?.confidence === "number" ? result.confidence : null
+        }
+      ]);
+
+      target.current = randomTime5MinStep();
+      setTime(target.current);
+    };
+
+    recognition.onend = () => {
+      console.log('onend');
+      if (shouldListenRef.current) {
+        recognition.start();
+      } else {
+        setListening(false);
+      }
+    };
+
+    recognitionRef.current = recognition;
+  }, [])
+
+  const startListening = () => {
+    shouldListenRef.current = true;
+    recognitionRef.current.start();
+    target.current = randomTime5MinStep();
+    setTime(target.current);
+    setRows([]);
+    setAiResult(null);    
+    setListening(true);
+    setTranscript("");
   };
+
+  const stopListening = () => {
+    shouldListenRef.current = false;
+    recognitionRef.current.stop();
+    setListening(false);
+  };
+
 
   return (
     <div className="page">
@@ -132,11 +214,11 @@ export default function App() {
             </div>
 
             <div className="actions">
-              <button className="btn" onClick={handleStart} disabled={listening}>
+              <button className="btn" onClick={startListening} disabled={listening}>
                 {listening ? "Đang nghe..." : "Start"}
               </button>
 
-              <button className="btn secondary" onClick={handleStop} disabled={!listening}>
+              <button className="btn secondary" onClick={stopListening} disabled={!listening}>
                 Stop
               </button>
             </div>

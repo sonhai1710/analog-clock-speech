@@ -34,7 +34,7 @@ export default function AnalogClock({ hour, minute, size = 320 }) {
   return (
     <div style={{ width: size, height: size }}>
       <svg width={size} height={size}>
-        <circle cx={cx} cy={cy} r={r - 6} fill="white" stroke="black" strokeWidth="3" />
+        <circle cx={cx} cy={cy} r={r - 5} fill="white" stroke="black" strokeWidth="10" />
 
         {/* ticks */}
         {ticks.map((i) => {
@@ -65,9 +65,9 @@ export default function AnalogClock({ hour, minute, size = 320 }) {
         {/* numbers */}
         {numbers.map((n) => {
           const angle = n * 30; // 12 numbers
-          const dist = r - 55;
+          const dist = r - 50;
           const x = cx + dist * Math.sin((Math.PI * angle) / 180);
-          const y = cy - dist * Math.cos((Math.PI * angle) / 180) + 8;
+          const y = cy - dist * Math.cos((Math.PI * angle) / 180) + 10;
 
           return (
             <text
@@ -75,7 +75,8 @@ export default function AnalogClock({ hour, minute, size = 320 }) {
               x={x}
               y={y}
               textAnchor="middle"
-              fontSize="20"
+              fontSize="30"
+              fontWeight="bold"
               fontFamily="Arial"
             >
               {n}
